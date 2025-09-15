@@ -1,13 +1,17 @@
-export default function ArticleList({ articles, onSelect }) {
-return (
-<div>
-{articles.map((a) => (
-<div key={a.id} style={{ border: '1px solid #ccc', margin: '5px', padding: '10px' }}>
-<h3>{a.title}</h3>
-<p>{a.abstract}</p>
-<button onClick={() => onSelect(a.id)}>Посмотреть</button>
-</div>
-))}
-</div>
-);
+import React from "react";
+import "./ArticleList.css";
+
+function ArticleList({ articles }) {
+  return (
+    <div className="article-list">
+      {articles.map((article) => (
+        <div key={article.id} className="article-item">
+          <h3>{article.title}</h3>
+          <p>{article.abstract}</p>
+        </div>
+      ))}
+    </div>
+  );
 }
+
+export default ArticleList;

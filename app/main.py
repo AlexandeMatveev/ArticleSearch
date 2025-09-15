@@ -1,25 +1,34 @@
 from fastapi import FastAPI
+from app.config.config import APP_NAME, GRAPHQL_PREFIX
+from app.core.middleware import LoggingMiddleware
 from app.api.routes import router as api_router
+from app.llm.router import router as llm_router
+from app.graphql.schema import graphql_app
+from app.db.neo4j_client import close_driver
 
+app = FastAPI(title=APP_NAME)
 
-from fastapi.middleware.cors import CORSMiddleware
+# Middlewares
+app.add_middleware(LoggingMiddleware)
 
+# REST API
+app.include_router(api_router)
 
-app = FastAPI(title="Scholar Search API")
+# LLM routes
+app.include_router(llm_router)
 
-app.include_router(api_router, prefix="/api")
+# GraphQL mounted at /graphql (prefix in config)
+app.include_router(graphql_app, prefix=GRAPHQL_PREFIX)
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def root():
-    return {"message": "Scholar Search API is running"}
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # или ["*"] для разработки
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    return {"status": "ok", "app": APP_NAME}
 
-# Подключение роутов API
-from app.api import routes
-app.include_router(routes.router)
+
+@app.on_event("shutdown")
+def shutdown_event():
+    # Закрываем Neo4j драйвер
+    try:
+        close_driver()
+    except Exception:
+        pass

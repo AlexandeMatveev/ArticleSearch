@@ -1,8 +1,13 @@
-from app.core.config import settings
+from fastapi import APIRouter
+from pydantic import BaseModel
 
-def query_llm(prompt: str) -> str:
-    """
-    Заглушка для LLM: возвращает имитацию ответа.
-    Позже сюда можно подключить OpenAI, HuggingFace и т.д.
-    """
-    return f"LLM response for: {prompt}"
+router = APIRouter(prefix="/llm", tags=["llm"])
+
+
+class PingResponse(BaseModel):
+    status: str
+
+
+@router.get("/ping", response_model=PingResponse)
+def ping():
+    return PingResponse(status="ok")
